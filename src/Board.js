@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import Square from './Square';
 
-function Board() {
+function Board({turn, handleTurn}) {
     // inefficient method for the sake of time
     const [values, setValues] = useState([['X','X','X','X','X','X','X'],
                                           ['X','X','X','X','X','X','X'],
@@ -12,10 +12,10 @@ function Board() {
 
     function handleClick(row, col) {
         let newValues = values.slice();
-        newValues[row][col] = "p1";
+        newValues[row][col] = turn ? "p1" : "p2";
         setValues(newValues);
+        handleTurn();
     }
-
 
     return (
         <div className="board">
