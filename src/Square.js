@@ -1,7 +1,7 @@
 import React from 'react';
 
-function Square() {
-    return <button className='square'></button>
+function Square({value, handleClick}) {
+    return <div className='square' value={value} onClick={handleClick}></div>
 }
 
 export default Square;
