@@ -11,12 +11,21 @@ function Board({turn, handleTurn}) {
                                           ['X','X','X','X','X','X','X']]);
 
     function handleClick(row, col) {
-        if (values[row][col] !== 'X') return;
+        if (values[row][col] !== 'X' || checkRow(col) === -1) return;
 
         let newValues = values.slice();
-        newValues[row][col] = turn ? "p1" : "p2";
+        newValues[checkRow(col)][col] = turn ? "p1" : "p2";
         setValues(newValues);
         handleTurn();
+    }
+
+    function checkRow(col) {
+        for (let i = 5; i >= 0; i--) {
+            if (values[i][col] === 'X') {
+                return i;
+            }
+        }
+        return -1;
     }
 
     return (
