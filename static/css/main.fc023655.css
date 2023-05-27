@@ -1,2 +1,0 @@
-*{box-sizing:border-box}.board,h1{align-items:center;display:flex;flex-direction:column}.square{border:1px solid #999;float:left;font-size:24px;font-weight:700;height:70px;line-height:34px;margin-right:-1px;margin-top:-1px;padding:0;text-align:center;width:70px}.circle[value=p1]{background:red;border-radius:50%}.circle[value=p2]{background:blue;border-radius:50%}.circle[value=X]{background:#fff}.board-row:after{clear:both;content:"";display:table}
-/*# sourceMappingURL=main.fc023655.css.map*/
