@@ -11,6 +11,8 @@ function Board({turn, handleTurn}) {
                                           ['X','X','X','X','X','X','X']]);
 
     function handleClick(row, col) {
+        if (values[row][col] !== 'X') return;
+
         let newValues = values.slice();
         newValues[row][col] = turn ? "p1" : "p2";
         setValues(newValues);
