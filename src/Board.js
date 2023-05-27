@@ -9,14 +9,17 @@ function Board({turn, handleTurn}) {
                                           ['X','X','X','X','X','X','X'],
                                           ['X','X','X','X','X','X','X'],
                                           ['X','X','X','X','X','X','X']]);
+    const [gameOver, setGameOver] = useState(false);
 
     function handleClick(row, col) {
-        if (values[row][col] !== 'X' || checkRow(col) === -1) return;
+        const newRow = checkRow(col);
+        if (values[row][col] !== 'X' || newRow === -1 || gameOver) return;
 
         let newValues = values.slice();
-        newValues[checkRow(col)][col] = turn ? "p1" : "p2";
+        newValues[newRow][col] = turn ? "p1" : "p2";
         setValues(newValues);
         handleTurn();
+        calculateWinner(newValues[newRow][col], newRow, col);
     }
 
     function checkRow(col) {
@@ -26,6 +29,67 @@ function Board({turn, handleTurn}) {
             }
         }
         return -1;
+    }
+
+    function calculateWinner(player, row, col) {
+        // horizontal win
+        let count = 0;
+        for (let i = 0; i < 7; i++) {
+            if (values[row][i] === player) {
+                count++;
+            } else {
+                count = 0;
+            }
+
+            if (count === 4) return setGameOver(true);
+        }
+
+        // vertical win
+        count = 0;
+        for (let i = 0; i < 6; i++) {
+            if (values[i][col] === player) {
+                count++;
+            } else {
+                count = 0;
+            }
+
+            if (count === 4) return setGameOver(true);
+        }
+
+        // '\' diagonal
+        count = 0;
+        let startRow = row > col ? row - col : 0;
+        let startCol = col > row ? col - row : 0;
+
+        for (let i = 0; i < Math.min(6-startRow, 7-startCol); i++) {
+            if (values[startRow+i][startCol+i] === player) {
+                count++;
+            } else {
+                count = 0;
+            }
+
+            if (count === 4) return setGameOver(true);
+        }
+
+        // '/' diagonal
+        count = 0;
+        startRow = row;
+        startCol = col;
+
+        while (startRow < 5 && startCol > 0) {
+            startRow++;
+            startCol--;
+        }
+
+        for (let i = 0; i < Math.min(startRow, 7-startCol); i++) {
+            if (values[startRow-i][startCol+i] === player) {
+                count++;
+            } else {
+                count = 0;
+            }
+
+            if (count === 4) return setGameOver(true);
+        }
     }
 
     return (
