@@ -15,7 +15,7 @@ function Game({ socket }: Props) {
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X']]);
-    const [gameOver, setGameOver] = useState(false);
+    const [gameOver, setGameOver] = useState<string>();
 
     useEffect(() => {
         socket.on("move", (msg: string) => {
@@ -52,7 +52,7 @@ function Game({ socket }: Props) {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(true);
+            if (count === 4) return setGameOver(player);
         }
 
         // vertical win
@@ -64,7 +64,7 @@ function Game({ socket }: Props) {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(true);
+            if (count === 4) return setGameOver(player);
         }
 
         // '\' diagonal
@@ -79,7 +79,7 @@ function Game({ socket }: Props) {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(true);
+            if (count === 4) return setGameOver(player);
         }
 
         // '/' diagonal
@@ -99,7 +99,7 @@ function Game({ socket }: Props) {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(true);
+            if (count === 4) return setGameOver(player);
         }
     }
 
@@ -115,7 +115,10 @@ function Game({ socket }: Props) {
     }
 
     return (
-        <Board values={values} handleClick={handleClick} />
+        <>
+            <Board values={values} handleClick={handleClick} />
+            {gameOver && <h1>Winner: {gameOver}</h1>}
+        </>
     );
 }
 
