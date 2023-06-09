@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Board from './Board';
+import { Socket } from 'socket.io-client';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 
-function Game({ socket }) {
+type Props = {
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+}
+
+function Game({ socket }: Props) {
     const [turn, setTurn] = useState("p1");
     const [values, setValues] = useState([['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
@@ -12,21 +18,21 @@ function Game({ socket }) {
     const [gameOver, setGameOver] = useState(false);
 
     useEffect(() => {
-        socket.on("move", msg => {
-            const [player, row, col] = msg.split(",");
+        socket.on("move", (msg: string) => {
+            const [player, row, col]: string[] = msg.split(",");
 
-            handleTurn(row, col);
+            handleTurn(Number(row), Number(col));
         });
     });
 
-    function handleClick(row, col) {
+    function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
         if (values[row][col] !== 'X' || newRow === -1 || gameOver) return;
         socket.emit("move", `${turn},${newRow},${col}`);
     }
 
     // helper function for "enforcing gravity"
-    function checkRow(col) {
+    function checkRow(col: number) {
         for (let i = 5; i >= 0; i--) {
             if (values[i][col] === 'X') {
                 return i;
@@ -36,7 +42,7 @@ function Game({ socket }) {
     }
 
     // algorithm to check if a move wins the game
-    function calculateWinner(player, row, col) {
+    function calculateWinner(player: string, row: number, col: number) {
         // horizontal win
         let count = 0;
         for (let i = 0; i < 7; i++) {
@@ -97,7 +103,7 @@ function Game({ socket }) {
         }
     }
 
-    function handleTurn(row, col) {
+    function handleTurn(row: number, col: number) {
         // update the board
         let newValues = values.slice();
         newValues[row][col] = turn;
