@@ -3,12 +3,13 @@ import Board from './Board';
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 
+let turn = "p1";
+
 type Props = {
-    socket: Socket<DefaultEventsMap, DefaultEventsMap>;
+    socket: Socket<DefaultEventsMap, DefaultEventsMap>
 }
 
 function Game({ socket }: Props) {
-    const [turn, setTurn] = useState("p1");
     const [values, setValues] = useState([['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
@@ -16,19 +17,25 @@ function Game({ socket }: Props) {
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X']]);
     const [gameOver, setGameOver] = useState<string>();
+    const [player, setPlayer] = useState("X");
 
     useEffect(() => {
         socket.on("move", (msg: string) => {
-            const [player, row, col]: string[] = msg.split(",");
+            const [row, col]: string[] = msg.split(",");
 
             handleTurn(Number(row), Number(col));
         });
-    });
+
+        socket.on("player", p => {
+            console.log("I am player", p);
+            setPlayer(p);
+        });
+    }, []);
 
     function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
-        if (values[row][col] !== 'X' || newRow === -1 || gameOver) return;
-        socket.emit("move", `${turn},${newRow},${col}`);
+        if (turn !== player || values[row][col] !== 'X' || newRow === -1 || gameOver) return;
+        socket.emit("move", `${newRow},${col}`);
     }
 
     // helper function for "enforcing gravity"
@@ -110,8 +117,8 @@ function Game({ socket }: Props) {
         setValues(newValues);
 
         // send move to other player
-        calculateWinner(newValues[row][col], row, col);
-        setTurn(turn === "p1" ? "p2" : "p1");
+        calculateWinner(turn, row, col);
+        turn = (turn === "p1" ? "p2" : "p1");
     }
 
     return (
