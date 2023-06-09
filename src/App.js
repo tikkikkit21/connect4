@@ -1,17 +1,15 @@
-import React, {useState} from 'react';
-import Board from './Board';
+import React from 'react';
+import Game from './Game';
+import {io} from 'socket.io-client';
+
+const SERVER_URL = "http://localhost:1717";
+const socket = io(SERVER_URL);
 
 function App() {
-    const [turn, setTurn] = useState(true); // true = p1, false = p2
-
-    function handleTurn() {
-        setTurn(!turn);
-    }
-
     return (
         <div className="App">
             <h1>Connect 4</h1>
-            <Board turn={turn} handleTurn={handleTurn} />
+            <Game socket={socket}/>
         </div>
     );
 }
