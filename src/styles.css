@@ -4,6 +4,7 @@
 
 /* Display */
 h1,
+p,
 .board {
     display: flex;
     flex-direction: column;

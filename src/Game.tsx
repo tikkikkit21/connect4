@@ -17,7 +17,7 @@ function Game({ socket }: Props) {
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X']]);
     const [gameOver, setGameOver] = useState<string>();
-    const [player, setPlayer] = useState("X");
+    const [player, setPlayer] = useState();
 
     useEffect(() => {
         socket.on("move", (msg: string) => {
@@ -124,6 +124,7 @@ function Game({ socket }: Props) {
     return (
         <>
             <Board values={values} handleClick={handleClick} />
+            {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
             {gameOver && <h1>Winner: {gameOver}</h1>}
         </>
     );
