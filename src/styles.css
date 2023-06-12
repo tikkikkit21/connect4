@@ -24,6 +24,7 @@ p,
     margin-top: -1px;
     padding: 0;
     text-align: center;
+    border-radius: 5px;
 }
 
 .square[data-value="p1"] {
