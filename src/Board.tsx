@@ -17,6 +17,7 @@ function Board({ values, handleClick, recent }: Props) {
         for (let col = 0; col < 7; col++) {
             cols.push(
                 <Square
+                    key={col}
                     value={values[row][col]}
                     handleClick={() => handleClick(row, col)}
                     isRecent={(moveRow === row && moveCol === col) || undefined}
@@ -25,7 +26,7 @@ function Board({ values, handleClick, recent }: Props) {
         }
 
         rows.push(
-            <div className='board-row'>
+            <div key={row} className='board-row'>
                 {cols}
             </div>
         );

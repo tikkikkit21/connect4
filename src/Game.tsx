@@ -9,13 +9,15 @@ type Props = {
     socket: Socket<DefaultEventsMap, DefaultEventsMap>
 }
 
+const emptyBoard: Array<Array<string>> = [['X', 'X', 'X', 'X', 'X', 'X', 'X'],
+                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
+                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
+                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
+                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
+                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X']];
+
 function Game({ socket }: Props) {
-    const [values, setValues] = useState([['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X']]);
+    const [values, setValues] = useState(emptyBoard.map(arr => arr.slice()));
     const [gameOver, setGameOver] = useState<string>();
     const [player, setPlayer] = useState();
     const [recentMove, setRecentMove] = useState<string>("");
@@ -31,7 +33,11 @@ function Game({ socket }: Props) {
             console.log("I am player", p);
             setPlayer(p);
         });
-    }, []);
+
+        socket.on("gg", () => {
+            resetGame();
+        });
+    }, [socket]);
 
     function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
@@ -39,40 +45,54 @@ function Game({ socket }: Props) {
         socket.emit("move", `${newRow},${col}`);
     }
 
-    // helper function for "enforcing gravity"
-    function checkRow(col: number) {
-        for (let i = 5; i >= 0; i--) {
-            if (values[i][col] === 'X') {
-                return i;
-            }
-        }
-        return -1;
+    function handleGameOver(player: string) {
+        setGameOver(player);
+    }
+
+    function handleTurn(row: number, col: number) {
+        setValues(prevVal => {
+            const newValues = prevVal.map(row => row.slice());
+            newValues[row][col] = turn;
+            setRecentMove(`${row},${col}`);
+            calculateWinner(turn, row, col, newValues);
+            turn = (turn === "p1" ? "p2" : "p1");
+            return newValues;
+        });
+    }
+
+    function resetGame() {
+        let newBoard = emptyBoard.map(row => row.slice());
+        setValues(() => newBoard);
+
+        setGameOver(undefined);
+        setRecentMove("");
+        turn = "p1";
     }
 
     // algorithm to check if a move wins the game
-    function calculateWinner(player: string, row: number, col: number) {
+    function calculateWinner(player: string, row: number, col: number, newValues: Array<Array<string>>) {
         // horizontal win
         let count = 0;
         for (let i = 0; i < 7; i++) {
-            if (values[row][i] === player) {
+            if (newValues[row][i] === player) {
                 count++;
             } else {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(player);
+            if (count === 4) return handleGameOver(player);
         }
 
         // vertical win
         count = 0;
         for (let i = 0; i < 6; i++) {
-            if (values[i][col] === player) {
+            if (newValues[i][col] === player) {
                 count++;
             } else {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(player);
+            if (count === 4) return handleGameOver(player);
         }
 
         // '\' diagonal
@@ -81,13 +101,13 @@ function Game({ socket }: Props) {
         let startCol = col > row ? col - row : 0;
 
         for (let i = 0; i < Math.min(6 - startRow, 7 - startCol); i++) {
-            if (values[startRow + i][startCol + i] === player) {
+            if (newValues[startRow + i][startCol + i] === player) {
                 count++;
             } else {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(player);
+            if (count === 4) return handleGameOver(player);
         }
 
         // '/' diagonal
@@ -101,26 +121,24 @@ function Game({ socket }: Props) {
         }
 
         for (let i = 0; i < Math.min(startRow, 7 - startCol); i++) {
-            if (values[startRow - i][startCol + i] === player) {
+            if (newValues[startRow - i][startCol + i] === player) {
                 count++;
             } else {
                 count = 0;
             }
 
-            if (count === 4) return setGameOver(player);
+            if (count === 4) return handleGameOver(player);
         }
     }
 
-    function handleTurn(row: number, col: number) {
-        // update the board
-        let newValues = values.slice();
-        newValues[row][col] = turn;
-        setValues(newValues);
-        setRecentMove(`${row},${col}`);
-
-        // send move to other player
-        calculateWinner(turn, row, col);
-        turn = (turn === "p1" ? "p2" : "p1");
+    // helper function for "enforcing gravity"
+    function checkRow(col: number) {
+        for (let i = 5; i >= 0; i--) {
+            if (values[i][col] === 'X') {
+                return i;
+            }
+        }
+        return -1;
     }
 
     return (
@@ -128,6 +146,7 @@ function Game({ socket }: Props) {
             <Board values={values} handleClick={handleClick} recent={recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
             {gameOver && <h1>Winner: {gameOver}</h1>}
+            {gameOver && <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />}
         </>
     );
 }

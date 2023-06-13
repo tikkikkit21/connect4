@@ -47,3 +47,8 @@ p,
     content: '';
     display: table;
 }
+
+.reset {
+    padding: 5px;
+    font-size: 20px;
+}
