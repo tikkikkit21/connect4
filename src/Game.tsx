@@ -18,6 +18,7 @@ function Game({ socket }: Props) {
                                           ['X', 'X', 'X', 'X', 'X', 'X', 'X']]);
     const [gameOver, setGameOver] = useState<string>();
     const [player, setPlayer] = useState();
+    const [recentMove, setRecentMove] = useState<string>("");
 
     useEffect(() => {
         socket.on("move", (msg: string) => {
@@ -115,6 +116,7 @@ function Game({ socket }: Props) {
         let newValues = values.slice();
         newValues[row][col] = turn;
         setValues(newValues);
+        setRecentMove(`${row},${col}`);
 
         // send move to other player
         calculateWinner(turn, row, col);
@@ -123,7 +125,7 @@ function Game({ socket }: Props) {
 
     return (
         <>
-            <Board values={values} handleClick={handleClick} />
+            <Board values={values} handleClick={handleClick} recent={recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
             {gameOver && <h1>Winner: {gameOver}</h1>}
         </>

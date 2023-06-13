@@ -26,16 +26,20 @@ p,
     text-align: center;
 }
 
-.square[data-value="p1"] {
+.p1 {
     background: red;
 }
 
-.square[data-value="p2"] {
+.p2 {
     background: blue;
 }
 
-.square[data-value="X"] {
+.X {
     background: white;
+}
+
+.isRecent {
+    border-width: 5px;
 }
 
 .board-row:after {
