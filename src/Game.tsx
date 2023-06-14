@@ -26,7 +26,7 @@ function Game({ socket }: Props) {
     const [history, setHistory] = useState<Array<History>>([
         { board: emptyBoard.map(row => row.slice()), recentMove: "" }
     ]);
-    
+
     const [currMove, setCurrMove] = useState(0);
     const lengthRef = useRef(0);
     lengthRef.current = history.length - 1;
@@ -161,16 +161,16 @@ function Game({ socket }: Props) {
         });
     }, [socket]);
 
-    const historyDisplay = history.map((value, move) => {
+    const historyDisplay = history.map((_value, move) => {
         return (
             <li key={move}>
-              <button onClick={() => setCurrMove(move)}>{"Go to move " + move}</button>
+                <button onClick={() => setCurrMove(move)}>{"Go to move " + move}</button>
             </li>
-          );
+        );
     });
 
     return (
-        <>
+        <div className="game">
             <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
             <ol>{historyDisplay}</ol>
@@ -181,7 +181,7 @@ function Game({ socket }: Props) {
                     <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
                 </div>
             }
-        </>
+        </div>
     );
 }
 
