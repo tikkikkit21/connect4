@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Board from './Board';
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
@@ -14,15 +14,32 @@ type Props = {
     socket: Socket<DefaultEventsMap, DefaultEventsMap>
 }
 
+type History = {
+    board: Array<Array<string>>,
+    recentMove: string
+}
+
 function Game({ socket }: Props) {
-    const [values, setValues] = useState(emptyBoard.map(arr => arr.slice()));
     const [gameOver, setGameOver] = useState(0);
     const [player, setPlayer] = useState<string>();
-    const [recentMove, setRecentMove] = useState("");
+
+    const [history, setHistory] = useState<Array<History>>([
+        { board: emptyBoard.map(row => row.slice()), recentMove: "" }
+    ]);
+    
+    const [currMove, setCurrMove] = useState(0);
+    const lengthRef = useRef(0);
+    lengthRef.current = history.length - 1;
 
     function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
-        if (turn !== player || values[row][col] !== 'X' || newRow === -1 || gameOver) return;
+        if (turn !== player
+            || history[history.length - 1].board[row][col] !== 'X'
+            || newRow === -1
+            || gameOver
+            || currMove !== history.length - 1
+        ) return;
+
         socket.emit("move", `${newRow},${col}`);
     }
 
@@ -31,21 +48,28 @@ function Game({ socket }: Props) {
     }
 
     function handleTurn(row: number, col: number) {
-        setValues(prevVal => {
-            const newValues = prevVal.map(row => row.slice());
-            newValues[row][col] = turn;
-            setRecentMove(`${row},${col}`);
-            calculateWinner(turn, row, col, newValues);
+        setHistory(prevHist => {
+            const newBoard = prevHist[lengthRef.current].board.map(row => row.slice());
+            newBoard[row][col] = turn;
+
+            const nextHistory = [...prevHist.slice(), {
+                board: newBoard,
+                recentMove: `${row},${col}`
+            }];
+
+            setCurrMove(nextHistory.length - 1);
+            calculateWinner(turn, row, col, newBoard);
             turn = (turn === "p1" ? "p2" : "p1");
-            return newValues;
+
+            return nextHistory;
         });
     }
 
     function resetGame() {
-        setValues(emptyBoard.map(row => row.slice()));
+        setCurrMove(0);
         setGameOver(0);
-        setRecentMove("");
         turn = "p1";
+        setHistory([{ board: emptyBoard.map(row => row.slice()), recentMove: "" }]);
     }
 
     // algorithm to check if a move wins the game
@@ -113,7 +137,7 @@ function Game({ socket }: Props) {
     // helper function for "enforcing gravity"
     function checkRow(col: number) {
         for (let i = 5; i >= 0; i--) {
-            if (values[i][col] === 'X') {
+            if (history[history.length - 1].board[i][col] === 'X') {
                 return i;
             }
         }
@@ -137,10 +161,19 @@ function Game({ socket }: Props) {
         });
     }, [socket]);
 
+    const historyDisplay = history.map((value, move) => {
+        return (
+            <li key={move}>
+              <button onClick={() => setCurrMove(move)}>{"Go to move " + move}</button>
+            </li>
+          );
+    });
+
     return (
         <>
-            <Board values={values} handleClick={handleClick} recent={recentMove} />
+            <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
+            <ol>{historyDisplay}</ol>
 
             {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
             {gameOver > 0 &&
