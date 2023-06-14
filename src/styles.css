@@ -56,3 +56,12 @@ p,
     justify-content: center;
     align-items: center;
 }
+
+/* Winning squares */
+.win-p1 {
+    background: rgba(255, 0, 0, 0.75);
+}
+
+.win-p2 {
+    background: rgba(0, 0, 255, 0.75);
+}

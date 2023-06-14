@@ -3,10 +3,11 @@ import Square from './Square';
 type Props = {
     values: Array<Array<string>>,
     handleClick: Function,
-    recent: string
+    recent: string,
+    winningMoves: Array<string>
 }
 
-function Board({ values, handleClick, recent }: Props) {
+function Board({ values, handleClick, recent, winningMoves }: Props) {
     const [moveRow, moveCol]: number[] = recent.split(",").map(Number);
     const rows = [];
 
@@ -21,6 +22,7 @@ function Board({ values, handleClick, recent }: Props) {
                     value={values[row][col]}
                     handleClick={() => handleClick(row, col)}
                     isRecent={(moveRow === row && moveCol === col) || undefined}
+                    isWin={winningMoves.includes(`${row},${col}`) ? `win-${values[row][col]}` : undefined}
                 />
             )
         }
