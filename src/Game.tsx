@@ -22,6 +22,7 @@ type History = {
 function Game({ socket }: Props) {
     const [gameOver, setGameOver] = useState(0);
     const [player, setPlayer] = useState<string>();
+    const [win, setWin] = useState<Array<string>>([]);
 
     const [history, setHistory] = useState<Array<History>>([
         { board: emptyBoard.map(row => row.slice()), recentMove: "" }
@@ -43,8 +44,9 @@ function Game({ socket }: Props) {
         socket.emit("move", `${newRow},${col}`);
     }
 
-    function handleGameOver(player: string) {
+    function handleGameOver(player: string, winningMoves: Array<string>) {
         setGameOver(Number(player[1]));
+        setWin(winningMoves);
     }
 
     function handleTurn(row: number, col: number) {
@@ -68,6 +70,7 @@ function Game({ socket }: Props) {
     function resetGame() {
         setCurrMove(0);
         setGameOver(0);
+        setWin([]);
         turn = "p1";
         setHistory([{ board: emptyBoard.map(row => row.slice()), recentMove: "" }]);
     }
@@ -75,45 +78,55 @@ function Game({ socket }: Props) {
     // algorithm to check if a move wins the game
     function calculateWinner(player: string, row: number, col: number, newValues: Array<Array<string>>) {
         // horizontal win
+        let winningMoves: Array<string> = [];
         let count = 0;
         for (let i = 0; i < 7; i++) {
             if (newValues[row][i] === player) {
                 count++;
+                winningMoves.push(`${row},${i}`);
             } else {
                 count = 0;
+                winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player);
+            if (count === 4) return handleGameOver(player, winningMoves);
         }
 
         // vertical win
+        winningMoves = [];
         count = 0;
         for (let i = 0; i < 6; i++) {
             if (newValues[i][col] === player) {
                 count++;
+                winningMoves.push(`${i},${col}`);
             } else {
                 count = 0;
+                winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player);
+            if (count === 4) return handleGameOver(player, winningMoves);
         }
 
         // '\' diagonal
+        winningMoves = [];
         count = 0;
         let startRow = row > col ? row - col : 0;
         let startCol = col > row ? col - row : 0;
 
         for (let i = 0; i < Math.min(6 - startRow, 7 - startCol); i++) {
             if (newValues[startRow + i][startCol + i] === player) {
+                winningMoves.push(`${startRow + i},${startCol + i}`);
                 count++;
             } else {
                 count = 0;
+                winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player);
+            if (count === 4) return handleGameOver(player, winningMoves);
         }
 
         // '/' diagonal
+        winningMoves = [];
         count = 0;
         startRow = row;
         startCol = col;
@@ -125,12 +138,14 @@ function Game({ socket }: Props) {
 
         for (let i = 0; i < Math.min(startRow, 7 - startCol); i++) {
             if (newValues[startRow - i][startCol + i] === player) {
+                winningMoves.push(`${startRow - i},${startCol + i}`);
                 count++;
             } else {
                 count = 0;
+                winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player);
+            if (count === 4) return handleGameOver(player, winningMoves);
         }
     }
 
@@ -171,7 +186,7 @@ function Game({ socket }: Props) {
 
     return (
         <div className="game">
-            <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} />
+            <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} winningMoves={win} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
             <ol>{historyDisplay}</ol>
 
