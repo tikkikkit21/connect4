@@ -142,8 +142,8 @@ function Game({ socket }: Props) {
             <Board values={values} handleClick={handleClick} recent={recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
 
-            {gameOver && <h1>Winner: P{gameOver}</h1>}
-            {gameOver &&
+            {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
+            {gameOver > 0 &&
                 <div className="reset">
                     <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
                 </div>
