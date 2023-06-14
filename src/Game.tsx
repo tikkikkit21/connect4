@@ -5,39 +5,20 @@ import { DefaultEventsMap } from '@socket.io/component-emitter';
 
 let turn = "p1";
 
+const emptyBoard: Array<Array<string>> = [];
+for (let i = 0; i < 6; i++) {
+    emptyBoard.push(Array(7).fill("X"));
+}
+
 type Props = {
     socket: Socket<DefaultEventsMap, DefaultEventsMap>
 }
 
-const emptyBoard: Array<Array<string>> = [['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X'],
-                                          ['X', 'X', 'X', 'X', 'X', 'X', 'X']];
-
 function Game({ socket }: Props) {
     const [values, setValues] = useState(emptyBoard.map(arr => arr.slice()));
-    const [gameOver, setGameOver] = useState<string>();
-    const [player, setPlayer] = useState();
-    const [recentMove, setRecentMove] = useState<string>("");
-
-    useEffect(() => {
-        socket.on("move", (msg: string) => {
-            const [row, col]: string[] = msg.split(",");
-
-            handleTurn(Number(row), Number(col));
-        });
-
-        socket.on("player", p => {
-            console.log("I am player", p);
-            setPlayer(p);
-        });
-
-        socket.on("gg", () => {
-            resetGame();
-        });
-    }, [socket]);
+    const [gameOver, setGameOver] = useState(0);
+    const [player, setPlayer] = useState<string>();
+    const [recentMove, setRecentMove] = useState("");
 
     function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
@@ -46,7 +27,7 @@ function Game({ socket }: Props) {
     }
 
     function handleGameOver(player: string) {
-        setGameOver(player);
+        setGameOver(Number(player[1]));
     }
 
     function handleTurn(row: number, col: number) {
@@ -61,10 +42,8 @@ function Game({ socket }: Props) {
     }
 
     function resetGame() {
-        let newBoard = emptyBoard.map(row => row.slice());
-        setValues(() => newBoard);
-
-        setGameOver(undefined);
+        setValues(emptyBoard.map(row => row.slice()));
+        setGameOver(0);
         setRecentMove("");
         turn = "p1";
     }
@@ -141,12 +120,34 @@ function Game({ socket }: Props) {
         return -1;
     }
 
+    useEffect(() => {
+        socket.on("move", (msg: string) => {
+            const [row, col]: string[] = msg.split(",");
+
+            handleTurn(Number(row), Number(col));
+        });
+
+        socket.on("player", p => {
+            console.log("I am player", p);
+            setPlayer(p);
+        });
+
+        socket.on("gg", () => {
+            resetGame();
+        });
+    }, [socket]);
+
     return (
         <>
             <Board values={values} handleClick={handleClick} recent={recentMove} />
             {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
-            {gameOver && <h1>Winner: {gameOver}</h1>}
-            {gameOver && <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />}
+
+            {gameOver && <h1>Winner: P{gameOver}</h1>}
+            {gameOver &&
+                <div className="reset">
+                    <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
+                </div>
+            }
         </>
     );
 }
