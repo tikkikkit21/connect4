@@ -9,11 +9,9 @@ type Props = {
 
 function Square({ value, isRecent, isWin, handleClick }: Props) {
     return (
-        <div
-            className={`square ${value}
-            ${isRecent && "isRecent"} ${isWin}`}
-            onClick={handleClick}
-        ></div>
+        <div className="square" onClick={handleClick}>
+            <div className={`circle ${value} ${isRecent && "isRecent"} ${isWin}`} />
+        </div>
     )
 }
 

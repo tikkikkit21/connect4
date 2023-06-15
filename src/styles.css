@@ -27,16 +27,23 @@ p,
     width: 70px;
     margin-right: -1px;
     margin-top: -1px;
-    padding: 0;
-    text-align: center;
+    padding: 0;  
+    position: relative;
+}
+
+.circle {
+    height: 68px;
+    width: 68px;
+    border-radius: 50%;
+    position: absolute;
 }
 
 .p1 {
-    background: red;
+    background: rgba(255, 0, 0, 0.75);
 }
 
 .p2 {
-    background: blue;
+    background: rgba(0, 0, 255, 0.75);
 }
 
 .isRecent {
@@ -59,9 +66,9 @@ p,
 
 /* Winning squares */
 .win-p1 {
-    background: rgba(255, 0, 0, 0.75);
+    background: red;
 }
 
 .win-p2 {
-    background: rgba(0, 0, 255, 0.75);
+    background: blue;
 }
