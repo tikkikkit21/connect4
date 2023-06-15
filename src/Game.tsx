@@ -3,6 +3,14 @@ import Board from './Board';
 import { Socket } from 'socket.io-client';
 import { DefaultEventsMap } from '@socket.io/component-emitter';
 
+import move from './audio/move.mp3';
+import win from './audio/win.mp3';
+import loss from './audio/loss.wav';
+
+const moveSound = new Audio(move);
+const winSound = new Audio(win);
+const lossSound = new Audio(loss);
+
 let turn = "p1";
 
 const emptyBoard: Array<Array<string>> = [];
@@ -23,14 +31,16 @@ function Game({ socket }: Props) {
     const [gameOver, setGameOver] = useState(0);
     const [player, setPlayer] = useState<string>();
     const [win, setWin] = useState<Array<string>>([]);
-
+    const [currMove, setCurrMove] = useState(0);
     const [history, setHistory] = useState<Array<History>>([
         { board: emptyBoard.map(row => row.slice()), recentMove: "" }
     ]);
 
-    const [currMove, setCurrMove] = useState(0);
     const lengthRef = useRef(0);
     lengthRef.current = history.length - 1;
+
+    const playerRef = useRef<string>();
+    playerRef.current = player;
 
     function handleClick(row: number, col: number): void {
         const newRow = checkRow(col);
@@ -44,12 +54,19 @@ function Game({ socket }: Props) {
         socket.emit("move", `${newRow},${col}`);
     }
 
-    function handleGameOver(player: string, winningMoves: Array<string>) {
-        setGameOver(Number(player[1]));
+    function handleGameOver(winner: string, winningMoves: Array<string>) {
+        setGameOver(Number(winner[1]));
         setWin(winningMoves);
+
+        if (`p${Number(winner[1])}` === playerRef.current) {
+            winSound.play();
+        } else {
+            lossSound.play();
+        }
     }
 
     function handleTurn(row: number, col: number) {
+        moveSound.play();
         setHistory(prevHist => {
             const newBoard = prevHist[lengthRef.current].board.map(row => row.slice());
             newBoard[row][col] = turn;
@@ -76,12 +93,12 @@ function Game({ socket }: Props) {
     }
 
     // algorithm to check if a move wins the game
-    function calculateWinner(player: string, row: number, col: number, newValues: Array<Array<string>>) {
+    function calculateWinner(movePlayer: string, row: number, col: number, newValues: Array<Array<string>>) {
         // horizontal win
         let winningMoves: Array<string> = [];
         let count = 0;
         for (let i = 0; i < 7; i++) {
-            if (newValues[row][i] === player) {
+            if (newValues[row][i] === movePlayer) {
                 count++;
                 winningMoves.push(`${row},${i}`);
             } else {
@@ -89,14 +106,14 @@ function Game({ socket }: Props) {
                 winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player, winningMoves);
+            if (count === 4) return handleGameOver(movePlayer, winningMoves);
         }
 
         // vertical win
         winningMoves = [];
         count = 0;
         for (let i = 0; i < 6; i++) {
-            if (newValues[i][col] === player) {
+            if (newValues[i][col] === movePlayer) {
                 count++;
                 winningMoves.push(`${i},${col}`);
             } else {
@@ -104,7 +121,7 @@ function Game({ socket }: Props) {
                 winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player, winningMoves);
+            if (count === 4) return handleGameOver(movePlayer, winningMoves);
         }
 
         // '\' diagonal
@@ -114,7 +131,7 @@ function Game({ socket }: Props) {
         let startCol = col > row ? col - row : 0;
 
         for (let i = 0; i < Math.min(6 - startRow, 7 - startCol); i++) {
-            if (newValues[startRow + i][startCol + i] === player) {
+            if (newValues[startRow + i][startCol + i] === movePlayer) {
                 winningMoves.push(`${startRow + i},${startCol + i}`);
                 count++;
             } else {
@@ -122,7 +139,7 @@ function Game({ socket }: Props) {
                 winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player, winningMoves);
+            if (count === 4) return handleGameOver(movePlayer, winningMoves);
         }
 
         // '/' diagonal
@@ -137,7 +154,7 @@ function Game({ socket }: Props) {
         }
 
         for (let i = 0; i < Math.min(startRow, 7 - startCol); i++) {
-            if (newValues[startRow - i][startCol + i] === player) {
+            if (newValues[startRow - i][startCol + i] === movePlayer) {
                 winningMoves.push(`${startRow - i},${startCol + i}`);
                 count++;
             } else {
@@ -145,7 +162,7 @@ function Game({ socket }: Props) {
                 winningMoves = [];
             }
 
-            if (count === 4) return handleGameOver(player, winningMoves);
+            if (count === 4) return handleGameOver(movePlayer, winningMoves);
         }
     }
 
