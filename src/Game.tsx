@@ -193,26 +193,65 @@ function Game({ socket }: Props) {
         });
     }, [socket]);
 
-    const historyDisplay = history.map((_value, move) => {
-        return (
-            <li key={move}>
-                <button onClick={() => setCurrMove(move)}>{"Go to move " + move}</button>
-            </li>
-        );
-    });
+    const historyEntries = [];
+    for (let i = 0; i < history.length; i += 2) {
+        if (i === history.length - 1) {
+            historyEntries.push(
+                <tr className="history" key={i}>
+                    <td>
+                        <button className="history" onClick={() => setCurrMove(i)}>
+                            {"Move " + i}
+                        </button>
+                    </td>
+                    <td>&nbsp;</td>
+                </tr>
+            );
+
+        } else {
+            historyEntries.push(
+                <tr className="history" key={i}>
+                    <td>
+                        <button className="history" onClick={() => setCurrMove(i)}>
+                            {"Move " + i}
+                        </button>
+                    </td>
+                    <td>
+                        <button className="history" onClick={() => setCurrMove(i + 1)}>
+                            {"Move " + (i + 1)}
+                        </button>
+                    </td>
+                </tr>
+            );
+        }
+    }
 
     return (
         <div className="game">
-            <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} winningMoves={win} />
-            {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
-            <ol>{historyDisplay}</ol>
-
-            {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
-            {gameOver > 0 &&
-                <div className="reset">
-                    <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
+            <div className="gameboard">
+                <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} winningMoves={win} />
+                {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
+                <div className="gameOver">
+                    {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
+                    {gameOver > 0 &&
+                        <div className="reset">
+                            <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
+                        </div>
+                    }
                 </div>
-            }
+            </div>
+            <div className="history">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player 1</th>
+                            <th>Player 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {historyEntries}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

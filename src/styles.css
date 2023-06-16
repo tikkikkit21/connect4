@@ -6,31 +6,43 @@ body {
     background-color: rgb(34, 34, 34);
 }
 
-/* Display */
+/* Overall Display & Layout */
 h1,
-p,
+p {
+    text-align: center;
+    color: white;
+}
+
+.game {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.gameboard,
+div.history {
+    margin: 30px;
+}
+
 .board {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: white
 }
 
-/* Game components */
 .square {
     border: 1px solid #999;
     float: left;
-    font-size: 24px;
-    font-weight: bold;
     line-height: 34px;
     height: 70px;
     width: 70px;
     margin-right: -1px;
     margin-top: -1px;
-    padding: 0;  
+    padding: 0;
     position: relative;
 }
 
+/* Game pieces */
 .circle {
     border: 0px solid #999;
     height: 68px;
@@ -51,25 +63,49 @@ p,
     border-width: 5px;
 }
 
-/* .board-row:after {
-    clear: both;
-    content: '';
-    display: table;
-} */
-
-.reset {
-    padding: 5px;
-    font-size: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Winning squares */
 .win-p1 {
     background: red;
 }
 
 .win-p2 {
     background: blue;
+}
+
+/* Move History Display */
+div.history {
+    padding-top: 30px;
+}
+
+table,
+th {
+    color: white;
+    border: 1px solid white;
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 115px;
+}
+
+button.history {
+    /* background-color: rgba(255, 255, 255, 0.75); */
+    cursor: pointer;
+    /* padding: 1px 15px; */
+    width: 100px;
+    margin: 5px;
+}
+
+table td+td {
+    border-left: 1px solid white;
+}
+
+button.history:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Misc Components */
+.reset {
+    padding: 5px;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
