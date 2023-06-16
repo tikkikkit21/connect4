@@ -193,37 +193,17 @@ function Game({ socket }: Props) {
         });
     }, [socket]);
 
-    const historyEntries = [];
-    for (let i = 0; i < history.length; i += 2) {
-        if (i === history.length - 1) {
-            historyEntries.push(
-                <tr className="history" key={i}>
-                    <td>
-                        <button className="history" onClick={() => setCurrMove(i)}>
-                            {"Move " + i}
-                        </button>
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-            );
-
-        } else {
-            historyEntries.push(
-                <tr className="history" key={i}>
-                    <td>
-                        <button className="history" onClick={() => setCurrMove(i)}>
-                            {"Move " + i}
-                        </button>
-                    </td>
-                    <td>
-                        <button className="history" onClick={() => setCurrMove(i + 1)}>
-                            {"Move " + (i + 1)}
-                        </button>
-                    </td>
-                </tr>
-            );
-        }
-    }
+    const historyEntries = history.map((_val, i) => {
+        if (i === 0) return;
+        
+        return (
+            <div className="history-item">
+                <button className="history" onClick={() => setCurrMove(i)}>
+                    {"Move " + i}
+                </button>
+            </div>
+        );
+    });
 
     return (
         <div className="game">
@@ -240,17 +220,11 @@ function Game({ socket }: Props) {
                 </div>
             </div>
             <div className="history">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Player 1</th>
-                            <th>Player 2</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {historyEntries}
-                    </tbody>
-                </table>
+                <div className="history-container">
+                    <div className="history-header p1">Player 1</div>
+                    <div className="history-header p2">Player 2</div>
+                    {historyEntries}
+                </div>
             </div>
         </div>
     );
