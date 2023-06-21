@@ -29,6 +29,7 @@ type History = {
 
 function Game({ socket }: Props) {
     const [gameOver, setGameOver] = useState(0);
+    const [rematchRequest, setRematchRequest] = useState(false);
     const [player, setPlayer] = useState<string>();
     const [isWaiting, setIsWaiting] = useState(true);
     const [win, setWin] = useState<Array<string>>([]);
@@ -197,7 +198,12 @@ function Game({ socket }: Props) {
             }
         });
 
-        socket.on("gg", () => {
+        socket.on("rematch", () => {
+            setRematchRequest(true);
+        });
+
+        socket.on("reset", () => {
+            setRematchRequest(false);
             resetGame();
         });
 
@@ -233,9 +239,25 @@ function Game({ socket }: Props) {
                 <p>{`${player === turn ? "It is your turn" : "Waiting for opponent"}${isWaiting ? " (waiting for join)" : ""}`}</p>
                 <div className="gameOver">
                     {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
-                    {gameOver > 0 &&
+                    {gameOver > 0 && !rematchRequest &&
                         <div className="reset">
-                            <input type="submit" className="reset" value="New Game" onClick={() => socket.emit("gg", "")} />
+                            <input
+                                type="submit"
+                                className="reset"
+                                value="New Game?"
+                                onClick={() => socket.emit("rematch", "")}
+                            />
+                        </div>
+                    }
+                    {gameOver > 0 && rematchRequest &&
+                        <div className="reset">
+                            <p>Opponent requests a rematch:</p>
+                            <input
+                                type="submit"
+                                className="reset"
+                                value="Accept"
+                                onClick={() => socket.emit("reset", "")}
+                            />
                         </div>
                     }
                 </div>
