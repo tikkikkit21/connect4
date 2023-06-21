@@ -168,9 +168,9 @@ function Game({ socket }: Props) {
 
     // helper function for "enforcing gravity"
     function checkRow(col: number) {
-        for (let i = 5; i >= 0; i--) {
-            if (history[history.length - 1].board[i][col] === 'X') {
-                return i;
+        for (let row = 0; row < 6; row++) {
+            if (history[history.length - 1].board[row][col] === 'X') {
+                return row;
             }
         }
         return -1;
@@ -193,13 +193,14 @@ function Game({ socket }: Props) {
         });
     }, [socket]);
 
-    const historyEntries = history.map((_val, i) => {
+    const historyEntries = history.map((val, i) => {
         if (i === 0) return;
-        
+        const [row, col] = val.recentMove.split(",");
+
         return (
             <div className="history-item">
                 <button className="history" onClick={() => setCurrMove(i)}>
-                    {"Move " + i}
+                    {`( ${String.fromCharCode(Number(col) + 97)},${Number(row) + 1} )`}
                 </button>
             </div>
         );

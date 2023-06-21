@@ -1,16 +1,18 @@
 import { MouseEventHandler } from 'react';
 
 type Props = {
-    value: string,
-    isRecent?: boolean,
-    isWin?: string,
-    handleClick: MouseEventHandler
+    player?: string
+    coord?: string
+    isRecent?: boolean
+    isWin?: string
+    handleClick?: MouseEventHandler
+    label?: string | number
 }
 
-function Square({ value, isRecent, isWin, handleClick }: Props) {
+function Square({ player, coord, isRecent, isWin, handleClick, label }: Props) {
     return (
-        <div className="square" onClick={handleClick}>
-            <div className={`circle ${value} ${isRecent && "isRecent"} ${isWin}`} />
+        <div className={`square ${coord}`} onClick={handleClick}>
+            {label ? <p>{label}</p> : <div className={`circle ${player} ${isRecent && "isRecent"} ${isWin}`} />}
         </div>
     )
 }
