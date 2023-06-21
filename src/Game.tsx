@@ -55,6 +55,10 @@ function Game({ socket }: Props) {
         socket.emit("move", `${newRow},${col}`);
     }
 
+    function getPlayer() {
+        return player;
+    }
+
     function handleGameOver(winner: string, winningMoves: Array<string>) {
         setGameOver(Number(winner[1]));
         setWin(winningMoves);
@@ -208,7 +212,7 @@ function Game({ socket }: Props) {
         const [row, col] = val.recentMove.split(",");
 
         return (
-            <div className="history-item">
+            <div key={i} className="history-item">
                 <button className="history" onClick={() => setCurrMove(i)}>
                     {`( ${String.fromCharCode(Number(col) + 97)},${Number(row) + 1} )`}
                 </button>
@@ -219,7 +223,13 @@ function Game({ socket }: Props) {
     return (
         <div className="game">
             <div className="gameboard">
-                <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} winningMoves={win} />
+                <Board
+                    values={history[currMove].board}
+                    handleClick={handleClick}
+                    recent={history[currMove].recentMove}
+                    winningMoves={win}
+                    getPlayer={getPlayer}
+                />
                 <p>{`${player === turn ? "It is your turn" : "Waiting for opponent"}${isWaiting ? " (waiting for join)" : ""}`}</p>
                 <div className="gameOver">
                     {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}

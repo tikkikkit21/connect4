@@ -1,14 +1,17 @@
 import Square from './Square';
+import { useState } from 'react';
 
 type Props = {
-    values: Array<Array<string>>,
-    handleClick: Function,
-    recent: string,
+    values: Array<Array<string>>
+    recent: string
     winningMoves: Array<string>
+    handleClick: Function
+    getPlayer: Function
 }
 
-function Board({ values, handleClick, recent, winningMoves }: Props) {
+function Board({ values, recent, winningMoves, handleClick, getPlayer }: Props) {
     const [moveRow, moveCol]: number[] = recent.split(",").map(Number);
+    const [resetPreview, setResetPreview] = useState(false);
     const rows = [];
 
     // populate board
@@ -21,9 +24,14 @@ function Board({ values, handleClick, recent, winningMoves }: Props) {
                 <Square
                     key={col}
                     player={values[row][col]}
-                    handleClick={() => handleClick(row, col)}
                     isRecent={(moveRow === row && moveCol === col) || undefined}
                     isWin={winningMoves.includes(`${row},${col}`) ? `win-${values[row][col]}` : undefined}
+                    reset={resetPreview}
+                    handleClick={() => {
+                        handleClick(row, col);
+                        setResetPreview(!resetPreview);
+                    }}
+                    getPlayer={getPlayer}
                 />
             );
         }
