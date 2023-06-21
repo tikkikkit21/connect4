@@ -30,6 +30,7 @@ type History = {
 function Game({ socket }: Props) {
     const [gameOver, setGameOver] = useState(0);
     const [player, setPlayer] = useState<string>();
+    const [isWaiting, setIsWaiting] = useState(true);
     const [win, setWin] = useState<Array<string>>([]);
     const [currMove, setCurrMove] = useState(0);
     const [history, setHistory] = useState<Array<History>>([
@@ -186,10 +187,19 @@ function Game({ socket }: Props) {
         socket.on("player", p => {
             console.log("I am player", p);
             setPlayer(p);
+
+            if (p === "p2") {
+                setIsWaiting(false);
+            }
         });
 
         socket.on("gg", () => {
             resetGame();
+        });
+
+        socket.on("join", () => {
+            console.log("player has joined");
+            setIsWaiting(false);
         });
     }, [socket]);
 
@@ -210,7 +220,7 @@ function Game({ socket }: Props) {
         <div className="game">
             <div className="gameboard">
                 <Board values={history[currMove].board} handleClick={handleClick} recent={history[currMove].recentMove} winningMoves={win} />
-                {player === turn ? <p>It is your turn</p> : <p>Waiting for opponent</p>}
+                <p>{`${player === turn ? "It is your turn" : "Waiting for opponent"}${isWaiting ? " (waiting for join)" : ""}`}</p>
                 <div className="gameOver">
                     {gameOver > 0 && <h1>Winner: P{gameOver}</h1>}
                     {gameOver > 0 &&
